@@ -431,13 +431,15 @@ class Linkedin(object):
         if keywords:
             params["keywords"] = keywords
 
-        data = self.search(params, **kwargs)
+        data = self.search(
+            params,
+            limit=limit,
+            offset=offset, 
+            **kwargs
+        )
 
         results = []
         for item in data:
-            if limit is not None and len(results) >= limit:
-                break
-                
             if (not include_private_profiles and 
                 (item.get("entityCustomTrackingInfo") or {}).get("memberDistance") == "OUT_OF_NETWORK"):
                 continue
