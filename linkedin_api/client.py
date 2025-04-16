@@ -1,9 +1,10 @@
-import requests
-import logging
-from linkedin_api.cookie_repository import CookieRepository
-from bs4 import BeautifulSoup, Tag
-from requests.cookies import RequestsCookieJar
 import json
+import logging
+
+import requests
+from bs4 import BeautifulSoup, Tag
+from linkedin_api.cookie_repository import CookieRepository
+from requests.cookies import RequestsCookieJar
 
 logger = logging.getLogger(__name__)
 

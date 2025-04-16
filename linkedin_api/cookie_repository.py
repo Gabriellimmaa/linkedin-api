@@ -1,9 +1,10 @@
 import os
 import pickle
 import time
+from typing import Optional
+
 import linkedin_api.settings as settings
 from requests.cookies import RequestsCookieJar
-from typing import Optional
 
 
 class Error(Exception):
