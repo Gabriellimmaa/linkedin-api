@@ -429,14 +429,17 @@ class Linkedin(object):
 
         params = {
             "filters": "List({})".format(",".join(filters)),
-            "count": count,
-            "start": (page - 1) * count,  # Calcula o offset
         }
 
         if keywords:
             params["keywords"] = keywords
 
-        data = self.search(params, **kwargs)
+        data = self.search(
+            params,
+            limit=count,
+            offset=count * (page - 1),
+            **kwargs
+        )
 
         results = []
         for item in data:
