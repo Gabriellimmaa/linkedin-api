@@ -327,8 +327,7 @@ class Linkedin(object):
             Union[Literal["F"], Literal["S"], Literal["O"]]
         ] = None,  # DEPRECATED - use network_depths
         title: Optional[str] = None,  # DEPRECATED - use keyword_title
-        page: int = 1,                  # Nova: Número da página (1-based)
-        count: int = 10,                # Nova: Itens por página
+        page: int = 1,                  # Nova: Número da página 
         limit: Optional[int] = None,    # Nova: Limite total de resultados
         **kwargs,
     ) -> List[Dict]:
@@ -374,8 +373,6 @@ class Linkedin(object):
         :type limit: int, optional
         :param page: Page number (1-based)
         :type page: int, optional
-        :param count: Items per page
-        :type count: int, optional
         :param limit: Maximum total results to return
         :type limit: int, optional
 
@@ -433,11 +430,15 @@ class Linkedin(object):
 
         if keywords:
             params["keywords"] = keywords
+            
+        offset = 0
+        if limit is not None:
+            offset = limit * (page - 1)
 
         data = self.search(
             params,
-            limit=count,
-            offset=count * (page - 1),
+            limit=limit,
+            offset=offset,
             **kwargs
         )
 
