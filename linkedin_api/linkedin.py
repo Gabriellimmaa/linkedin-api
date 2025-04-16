@@ -238,7 +238,7 @@ class Linkedin(object):
             )
 
             res = self._fetch(
-                f"/graphql?variables=(start:{default_params['start']},origin:{default_params['origin']},"
+                f"/graphql?variables=(start:{len(results) + offset},origin:{default_params['origin']},"
                 f"query:("
                 f"{keywords}"
                 f"flagshipSearchIntent:SEARCH_SRP,"
