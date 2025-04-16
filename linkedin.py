@@ -8,19 +8,17 @@ import random
 import uuid
 from operator import itemgetter
 from time import sleep
+from typing import Dict, List, Literal, Optional, Union
 from urllib.parse import urlencode
-from typing import Dict, Union, Optional, List, Literal
 
 from linkedin_api.client import Client
-from linkedin_api.utils.helpers import (
-    get_id_from_urn,
-    get_urn_from_raw_update,
-    get_list_posts_sorted_without_promoted,
-    parse_list_raw_posts,
-    parse_list_raw_urns,
-    generate_trackingId,
-    generate_trackingId_as_charString,
-)
+from linkedin_api.utils.helpers import (generate_trackingId,
+                                        generate_trackingId_as_charString,
+                                        get_id_from_urn,
+                                        get_list_posts_sorted_without_promoted,
+                                        get_urn_from_raw_update,
+                                        parse_list_raw_posts,
+                                        parse_list_raw_urns)
 
 logger = logging.getLogger(__name__)
 
@@ -329,6 +327,9 @@ class Linkedin(object):
             Union[Literal["F"], Literal["S"], Literal["O"]]
         ] = None,  # DEPRECATED - use network_depths
         title: Optional[str] = None,  # DEPRECATED - use keyword_title
+        page: int = 1,                  # Nova: Número da página (1-based)
+        count: int = 10,                # Nova: Itens por página
+        limit: Optional[int] = None,    # Nova: Limite total de resultados
         **kwargs,
     ) -> List[Dict]:
         """Perform a LinkedIn search for people.
@@ -370,6 +371,12 @@ class Linkedin(object):
         :param connection_of: Connection of LinkedIn user, given by profile URN ID
         :type connection_of: str, optional
         :param limit: Maximum length of the returned list, defaults to -1 (no limit)
+        :type limit: int, optional
+        :param page: Page number (1-based)
+        :type page: int, optional
+        :param count: Items per page
+        :type count: int, optional
+        :param limit: Maximum total results to return
         :type limit: int, optional
 
         :return: List of profiles (minimal data only)
@@ -420,7 +427,11 @@ class Linkedin(object):
         if keyword_school:
             filters.append(f"(key:school,value:List({keyword_school}))")
 
-        params = {"filters": "List({})".format(",".join(filters))}
+        params = {
+            "filters": "List({})".format(",".join(filters)),
+            "count": count,
+            "start": (page - 1) * count,  # Calcula o offset
+        }
 
         if keywords:
             params["keywords"] = keywords
@@ -429,27 +440,20 @@ class Linkedin(object):
 
         results = []
         for item in data:
-            if (
-                not include_private_profiles
-                and (item.get("entityCustomTrackingInfo") or {}).get(
-                    "memberDistance", None
-                )
-                == "OUT_OF_NETWORK"
-            ):
+            if limit is not None and len(results) >= limit:
+                break
+                
+            if (not include_private_profiles and 
+                (item.get("entityCustomTrackingInfo") or {}).get("memberDistance") == "OUT_OF_NETWORK"):
                 continue
-            results.append(
-                {
-                    "urn_id": get_id_from_urn(
-                        get_urn_from_raw_update(item.get("entityUrn", None))
-                    ),
-                    "distance": (item.get("entityCustomTrackingInfo") or {}).get(
-                        "memberDistance", None
-                    ),
-                    "jobtitle": (item.get("primarySubtitle") or {}).get("text", None),
-                    "location": (item.get("secondarySubtitle") or {}).get("text", None),
-                    "name": (item.get("title") or {}).get("text", None),
-                }
-            )
+                
+            results.append({
+                "urn_id": get_id_from_urn(get_urn_from_raw_update(item.get("entityUrn"))),
+                "distance": (item.get("entityCustomTrackingInfo") or {}).get("memberDistance"),
+                "jobtitle": (item.get("primarySubtitle") or {}).get("text"),
+                "location": (item.get("secondarySubtitle") or {}).get("text"),
+                "name": (item.get("title") or {}).get("text"),
+            })
 
         return results
 
