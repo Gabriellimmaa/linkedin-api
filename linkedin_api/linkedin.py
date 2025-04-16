@@ -435,7 +435,6 @@ class Linkedin(object):
             params,
             limit=limit,
             offset=offset, 
-            **kwargs
         )
 
         results = []
