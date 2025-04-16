@@ -197,7 +197,7 @@ class Linkedin(object):
             data["paging"] = res.json()["paging"]
         return data["elements"]
 
-    def search(self, params: Dict, limit=-1, offset=0) -> List:
+    def search(self, params: Dict, limit: int, offset: int = 20) -> List:
         """Perform a LinkedIn search.
 
         :param params: Search parameters (see code)
